@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Keluar Masuk Inspektorat</title>
+<meta name="theme-color" content="#1f5c4a">
+<link rel="manifest" href="manifest-anggota.json">
+<link rel="icon" type="image/png" href="icons/anggota-192.png">
+<link rel="apple-touch-icon" href="icons/anggota-apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Keluar Masuk">
+<style>
+  :root{--hijau:#1f5c4a;--hijau2:#e8f2ee;--merah:#c0392b;--merah2:#fdecea;--kuning:#b9770e;
+        --teks:#1d2421;--kabur:#66706b;--garis:#dfe5e2;--bg:#f4f6f5;--kad:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--teks);font-size:15px}
+  header{background:var(--hijau);color:#fff;padding:16px}
+  header h1{margin:0;font-size:17px}
+  header p{margin:2px 0 0;font-size:12.5px;opacity:.85}
+  main{max-width:760px;margin:0 auto;padding:16px}
+  .kad{background:var(--kad);border:1px solid var(--garis);border-radius:12px;padding:16px;margin-bottom:14px}
+  label{display:block;font-size:13px;font-weight:600;margin:12px 0 5px}
+  input,select,textarea{width:100%;padding:11px 12px;border:1px solid #c9d2ce;border-radius:8px;font-size:15px;background:#fff;font-family:inherit}
+  input:focus,select:focus{outline:2px solid var(--hijau);border-color:transparent}
+  .baris{display:flex;gap:10px}.baris>*{flex:1}
+  button{font-family:inherit;cursor:pointer;border:0;border-radius:10px;font-weight:700}
+  .btn{width:100%;padding:14px;font-size:16px;margin-top:16px;color:#fff;background:var(--hijau)}
+  .btn.keluar{background:#d35400}.btn.masuk{background:var(--hijau);font-size:20px;padding:20px}
+  .btn:disabled{opacity:.55}
+  .pautan{background:none;color:var(--hijau);padding:6px 0;font-weight:600;font-size:13px}
+  .cek{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px}.cek input{width:auto}
+  .sapa{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .sapa b{font-size:15px}
+  .lencana{display:inline-block;white-space:nowrap;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700}
+  .l-dalam{background:var(--hijau2);color:var(--hijau)}.l-luar{background:#fdf0e5;color:#a04000}.l-lewat{background:var(--merah2);color:var(--merah)}
+  .butiran{margin:10px 0 0;padding:0;list-style:none}
+  .butiran li{display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed var(--garis);font-size:14px}
+  .butiran li span:first-child{color:var(--kabur);width:120px;flex:none}
+  .ralat{background:var(--merah2);color:var(--merah);padding:10px 12px;border-radius:8px;margin-top:12px;font-size:14px}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#222;color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;z-index:9;max-width:90%}
+  .hidden{display:none!important}
+  .muat{color:var(--kabur);text-align:center;padding:30px}
+  /* Bos */
+  .stat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  .stat div{background:var(--kad);border:1px solid var(--garis);border-radius:12px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:26px}.stat span{font-size:12px;color:var(--kabur)}
+  .stat .s-lewat b{color:var(--merah)}.stat .s-luar b{color:#a04000}.stat .s-dalam b{color:var(--hijau)}
+  h2{font-size:15px;margin:18px 0 10px}
+  .orang{background:var(--kad);border:1px solid var(--garis);border-left:5px solid #e67e22;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+  .orang.lewat{border-left-color:var(--merah);background:#fffafa}
+  .orang .atas{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .orang .nm{font-weight:700;font-size:14px}
+  .orang .info{font-size:13px;color:var(--kabur);margin-top:5px;line-height:1.5}
+  .orang .info b{color:var(--teks);font-weight:600}
+  .cip{display:flex;flex-wrap:wrap;gap:6px}
+  .cip span{background:var(--hijau2);color:var(--hijau);font-size:12px;padding:5px 9px;border-radius:99px}
+  .alat{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .alat input{width:auto;flex:1;min-width:150px}
+  .alat button{padding:10px 14px;background:var(--hijau);color:#fff;font-size:14px}
+  .jadual{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:620px}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid var(--garis);vertical-align:top}
+  th{background:var(--hijau2);color:var(--hijau);font-size:12px}
+  td.m{color:var(--merah);font-weight:700}
+  .kecil{font-size:12px;color:var(--kabur)}
+  .senaraiRakan{max-height:210px;overflow-y:auto;border:1px solid var(--garis);border-radius:8px;margin-top:6px}
+  .senaraiRakan label{display:flex;align-items:center;gap:10px;margin:0;padding:10px 12px;font-weight:400;font-size:13.5px;border-bottom:1px solid var(--garis);cursor:pointer}
+  .senaraiRakan label:last-child{border-bottom:0}
+  .senaraiRakan input{width:18px;height:18px;flex:none}
+  .cip span.x{cursor:pointer}
+  /* Avatar */
+  .av{flex:none;border-radius:50%;object-fit:cover;display:inline-flex;align-items:center;justify-content:center;
+      font-weight:700;color:#fff;letter-spacing:.5px;background:#8aa59b;overflow:hidden;vertical-align:middle}
+  .av-24{width:24px;height:24px;font-size:10px}
+  .av-32{width:32px;height:32px;font-size:12px}
+  .av-48{width:48px;height:48px;font-size:16px}
+  .av-72{width:72px;height:72px;font-size:24px}
+  .profil{display:flex;align-items:center;gap:14px}
+  .profil .bingkai{position:relative;cursor:pointer}
+  .profil .kamera{position:absolute;right:-2px;bottom:-2px;width:26px;height:26px;border-radius:50%;background:var(--hijau);
+      color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+  .cip span{display:inline-flex;align-items:center;gap:6px}
+  .cip span .av{margin-left:-4px}
+  .orang .atas .kiri{display:flex;gap:12px;align-items:center}
+  .grid-dalam{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:12px}
+  .grid-dalam div{text-align:center;font-size:11px;line-height:1.25;color:var(--teks)}
+  .grid-dalam .av{margin:0 auto 6px;display:flex}
+  td .nmc{display:flex;align-items:center;gap:8px}
+  .orang.lewat .av{box-shadow:0 0 0 3px var(--merah)}
+  .av-lihat{cursor:zoom-in}
+  .amaran{background:#fff6e0;border:1px solid #f0c36d;color:#7a5200;padding:12px;border-radius:8px;margin-top:12px;font-size:14px;line-height:1.45}
+  .lightbox{position:fixed;inset:0;z-index:20;background:rgba(10,14,12,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 16px 24px}
+  .lightbox img{max-width:100%;max-height:calc(100vh - 150px);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.5);background:#fff}
+  .lbNama{color:#fff;font-weight:700;font-size:15px;margin-top:16px;text-align:center}
+  .lbStatus{color:rgba(255,255,255,.65);font-size:12px;margin-top:6px;min-height:16px}
+  .lbTutup{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:18px}
+
+  header{padding-top:calc(16px + env(safe-area-inset-top))}
+  .barPasang{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:10px;background:#fff6e0;
+    border-bottom:1px solid #f0c36d;padding:10px 16px;font-size:13px;color:#5a4000}
+  .barPasang span{flex:1;line-height:1.4}
+  .barPasang #bPasang{background:var(--hijau);color:#fff;padding:8px 14px;font-size:13px}
+  .barPasang #bTutupPasang{background:none;color:#5a4000;font-size:16px;padding:4px 6px}
+</style>
+</head>
+<body>
+<script>if(/[?&]page=bos\b/.test(location.search))location.replace('bos.html');</script>
+
+<header>
+  <h1 id="tajuk">Rekod Keluar Masuk Pejabat</h1>
+  <p>Unit Inspektorat · Pejabat Kesihatan Daerah Kulim</p>
+</header>
+
+<main>
+  <!-- ================= ANGGOTA ================= -->
+  <section id="vAnggota" class="hidden">
+    <div id="kLogin" class="kad">
+      <label for="nama">Nama</label>
+      <select id="nama"><option value="">Memuatkan senarai…</option></select>
+      <label for="pin">PIN (4 digit)</label>
+      <input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••">
+      <label class="cek"><input type="checkbox" id="ingat" checked> Ingat saya di telefon ini</label>
+      <button class="btn" id="bLogin">Teruskan</button>
+      <div id="eLogin" class="ralat hidden"></div>
+    </div>
+
+    <div id="kSaya" class="hidden">
+      <div class="kad sapa">
+        <div class="profil">
+          <div class="bingkai" id="bGambar" title="Lihat gambar">
+            <span id="sayaAv"></span><span class="kamera">📷</span>
+          </div>
+          <div><div class="kecil">Anggota</div><b id="sayaNama"></b>
+            <div><button class="pautan" id="bTukarGambar">Tukar gambar</button></div></div>
+        </div>
+        <div style="text-align:right"><span id="sayaLencana" class="lencana"></span><br>
+          <button class="pautan" id="bKeluarAkaun">Bukan saya</button></div>
+      </div>
+      <input type="file" id="failGambar" accept="image/*" class="hidden">
+
+      <!-- Borang keluar -->
+      <div id="kBorang" class="kad hidden">
+        <b>Saya hendak keluar pejabat</b>
+        <label for="fTujuan">Tujuan *</label>
+        <select id="fTujuan">
+          <option value="">— Pilih —</option>
+          <option>Pemeriksaan Premis</option>
+          <option>Siasatan Kes</option>
+          <option>Siasatan Aduan</option>
+          <option>Operasi / Penguatkuasaan</option>
+          <option>Pensampelan</option>
+          <option>Mesyuarat / Kursus</option>
+          <option>Urusan Rasmi Luar Pejabat</option>
+          <option>Urusan Peribadi</option>
+          <option>Lain-lain</option>
+        </select>
+        <label for="fLokasi">Lokasi / Premis *</label>
+        <input id="fLokasi" placeholder="cth: Restoran Ali, Taman Selasih">
+        <label>Pergi bersama <span class="kecil" style="font-weight:400">(boleh pilih lebih dari seorang)</span></label>
+        <div class="pilihRakan">
+          <div id="rakanDipilih" class="cip" style="margin-bottom:8px"></div>
+          <input id="cariRakan" placeholder="Taip untuk cari nama…">
+          <div id="senaraiRakan" class="senaraiRakan"></div>
+        </div>
+        <label for="fCatatan">Catatan</label>
+        <input id="fCatatan" placeholder="Pilihan">
+        <button class="btn keluar" id="bKeluar">KELUAR SEKARANG</button>
+        <div id="eBorang" class="ralat hidden"></div>
+      </div>
+
+      <!-- Sedang di luar -->
+      <div id="kLuar" class="kad hidden">
+        <b>Anda sedang di luar pejabat</b>
+        <ul class="butiran" id="luarButiran"></ul>
+        <div id="amaranLupa" class="amaran hidden"></div>
+        <div id="kJamSebenar" class="hidden">
+          <label for="fJamSebenar" id="lblJamSebenar">Jam sebenar anda balik ke pejabat</label>
+          <input id="fJamSebenar" type="time">
+        </div>
+        <button class="btn masuk" id="bMasuk">MASUK PEJABAT</button>
+        <button class="pautan" id="bIsiJam" style="margin-top:8px">Terlupa tekan tadi? Isi jam sebenar balik</button>
+        <div id="eLuar" class="ralat hidden"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BOS ================= -->
+  <section id="vBos" class="hidden">
+    <div id="kBosLogin" class="kad">
+      <label for="bosPass">Kata laluan</label>
+      <input id="bosPass" type="password" autocomplete="off">
+      <button class="btn" id="bBosLogin">Buka Paparan</button>
+      <div id="eBos" class="ralat hidden"></div>
+    </div>
+
+    <div id="kBos" class="hidden">
+      <div class="alat" style="margin-bottom:12px">
+        <span class="kecil" id="kemaskini"></span>
+        <span style="flex:1"></span>
+        <button id="bMuat">↻ Muat semula</button>
+      </div>
+      <div class="stat">
+        <div class="s-dalam"><b id="nDalam">0</b><span>Di pejabat</span></div>
+        <div class="s-luar"><b id="nLuar">0</b><span>Di luar</span></div>
+        <div class="s-lewat"><b id="nLewat">0</b><span>Lupa tekan MASUK</span></div>
+      </div>
+
+      <input id="cari" placeholder="Cari nama…" style="margin-bottom:4px">
+
+      <h2>Sedang di luar pejabat</h2>
+      <div id="senaraiLuar"></div>
+
+      <h2>Ada di pejabat</h2>
+      <div class="kad"><div class="grid-dalam" id="senaraiDalam"></div></div>
+
+      <h2>Rekod harian</h2>
+      <div class="kad">
+        <div class="alat">
+          <button id="bSebelum" title="Hari sebelum">‹</button>
+          <input type="date" id="tarikh">
+          <button id="bSelepas" title="Hari selepas">›</button>
+          <button id="bTarikh">Hari ini</button>
+        </div>
+        <div class="kecil" id="labelTarikh" style="margin-top:10px;font-weight:600;color:var(--teks)"></div>
+        <div class="jadual" style="margin-top:12px"><table>
+          <thead><tr><th>Nama</th><th>Keluar</th><th>Masuk</th><th>Tempoh</th><th>Tujuan</th><th>Lokasi</th></tr></thead>
+          <tbody id="jadualHarian"></tbody>
+        </table></div>
+        <p class="kecil">Rekod penuh ada dalam Google Sheet (tab “Rekod”) dan boleh dimuat turun sebagai Excel.</p>
+      </div>
+      <h2>Rumusan bulanan</h2>
+      <div class="kad">
+        <div class="alat">
+          <select id="pilihBulan" style="flex:1;width:auto"></select>
+          <button id="bRumusan">Papar</button>
+        </div>
+        <div id="kRumusan" class="hidden" style="margin-top:14px">
+          <div class="stat" id="statRumusan"></div>
+          <button class="btn" id="bMuatTurun" style="margin:0 0 14px">⬇ Muat turun Excel</button>
+          <div class="jadual"><table>
+            <thead><tr><th>Nama</th><th>Bil. keluar</th><th>Jumlah masa di luar</th><th>Purata</th><th>Tujuan utama</th><th>Belum MASUK</th></tr></thead>
+            <tbody id="jadualRumusan"></tbody>
+          </table></div>
+          <p class="kecil">Fail Excel ada 2 helaian: <b>Rumusan</b> (setiap anggota, termasuk pecahan ikut tujuan) dan <b>Butiran</b> (semua rekod keluar masuk bulan tersebut).</p>
+        </div>
+      </div>
+
+      <h2>Urus gambar anggota</h2>
+      <div class="kad">
+        <button class="pautan" id="bUrusGambar">📷 Tunjuk senarai untuk upload gambar</button>
+        <div id="kUrusGambar" class="hidden">
+          <p class="kecil" style="margin:6px 0 14px">Tekan gambar/nama anggota, kemudian pilih gambar dari galeri atau ambil gambar baru.</p>
+          <div class="grid-dalam" id="gridUrus"></div>
+        </div>
+      </div>
+      <input type="file" id="failGambarBos" accept="image/*" class="hidden">
+      <button class="pautan" id="bBosKeluar">Log keluar</button>
+    </div>
+  </section>
+</main>
+
+<div id="lightbox" class="lightbox hidden">
+  <button class="lbTutup" aria-label="Tutup">✕</button>
+  <img id="lbImg" alt="">
+  <div id="lbNama" class="lbNama"></div>
+  <div id="lbStatus" class="lbStatus"></div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+const MODE = 'anggota';
+const $ = id => document.getElementById(id);
+const show = (el, on) => el.classList.toggle('hidden', !on);
+
+// Dalam Apps Script guna google.script.run; dalam app (PWA) guna API_URL
+const API_URL = 'https://script.google.com/macros/s/AKfycbysCzXIdj8RH4jKniNsttIvGrqLV20bmSKu5nlrbpKrRwOPI9JQl9JWJnCzGouRu-RYnA/exec';
+function run(fn, ...args) {
+  if (window.google && google.script && google.script.run) {
+    return new Promise((res, rej) => {
+      google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args);
+    });
+  }
+  return fetch(API_URL, {
+    method: 'POST', redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ fn: fn, args: args })
+  }).then(r => {
+    if (!r.ok) throw new Error('Pelayan tidak dapat dihubungi (' + r.status + ').');
+    return r.json();
+  }, () => { throw new Error('Tiada sambungan internet. Cuba lagi.'); })
+    .then(j => { if (!j.ok) throw new Error(j.error || 'Ralat tidak diketahui.'); return j.data; });
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function simpan(k, v) {
+  try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {}
+}
+function baca(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function mesej(e) { return (e && e.message ? e.message : String(e)).replace(/^Error:\s*/, ''); }
+function ralat(el, e) { el.textContent = mesej(e); show(el, true); }
+function toast(t) {
+  const el = $('toast'); el.textContent = t; show(el, true);
+  clearTimeout(toast.t); toast.t = setTimeout(() => show(el, false), 5000);
+}
+function tempohStr(m) {
+  if (m === '' || m == null || isNaN(m)) return '';
+  const j = Math.floor(m / 60), n = m % 60;
+  return (j ? j + 'j ' : '') + n + 'm';
+}
+
+/* ================= GAMBAR / AVATAR ================= */
+let GAMBAR = {};
+const WARNA = ['#1f5c4a','#2e86ab','#a23b72','#c06c00','#5b5f97','#3d7a3a','#8a4f7d','#b5523b','#2f6f8f','#6b6b3a'];
+const ABAIKAN = ['BIN','BINTI','BT','B','BTE','@','ANAK','A/L','A/P'];
+
+function inisial(n) {
+  const w = String(n).split(/\s+/).filter(x => x && ABAIKAN.indexOf(x) < 0);
+  return ((w[0] || '?')[0] + (w[1] ? w[1][0] : '')).toUpperCase();
+}
+function warna(n) {
+  let h = 0; for (const c of String(n)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return WARNA[h % WARNA.length];
+}
+// lihat=true → boleh ditekan untuk paparan penuh (jika ada gambar)
+function av(n, s, lihat) {
+  const g = GAMBAR[n];
+  if (g) return '<img class="av av-' + s + (lihat ? ' av-lihat' : '') + '"' +
+    (lihat ? ' data-lihat="' + esc(n) + '"' : '') + ' src="' + g + '" alt="">';
+  return '<span class="av av-' + s + '" style="background:' + warna(n) + '">' + esc(inisial(n)) + '</span>';
+}
+async function muatGambar() {
+  try { GAMBAR = await run('apiGambar') || {}; } catch (e) { GAMBAR = {}; }
+}
+
+/* ---------- Paparan gambar penuh ---------- */
+const BESAR = {};          // cache gambar besar ikut nama
+let lihatNama = null;
+async function bukaGambar(n) {
+  if (!GAMBAR[n]) return;
+  lihatNama = n;
+  $('lbImg').src = BESAR[n] || GAMBAR[n];
+  $('lbNama').textContent = n;
+  $('lbStatus').textContent = BESAR[n] ? '' : 'Memuatkan gambar penuh…';
+  show($('lightbox'), true);
+  document.body.style.overflow = 'hidden';
+  if (BESAR[n]) return;
+  try {
+    const b = await run('apiGambarBesar', n);
+    if (b) BESAR[n] = b;
+    if (lihatNama === n) { if (b) $('lbImg').src = b; $('lbStatus').textContent = ''; }
+  } catch (e) { if (lihatNama === n) $('lbStatus').textContent = ''; }
+}
+function tutupGambar() {
+  lihatNama = null;
+  show($('lightbox'), false);
+  document.body.style.overflow = '';
+}
+
+// Kecilkan gambar. potong=true → segi empat (untuk ikon kecil)
+function lukis(img, S, potong, had) {
+  let sw = img.width, sh = img.height, sx = 0, sy = 0, w, h;
+  if (potong) { const m = Math.min(sw, sh); sx = (sw - m) / 2; sy = (sh - m) / 2; sw = sh = m; w = h = S; }
+  else { const k = Math.min(1, S / Math.max(sw, sh)); w = Math.round(sw * k); h = Math.round(sh * k); }
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+  x.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+  let q = 0.85, d = c.toDataURL('image/jpeg', q);
+  while (d.length > had && q > 0.3) { q -= 0.1; d = c.toDataURL('image/jpeg', q); }
+  return d.length > had ? '' : d;
+}
+// Hasilkan { kecil: 240x240, besar: max 1000px }
+function prosesGambar(fail) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(fail);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const kecil = lukis(img, 240, true, 45000);
+      let besar = lukis(img, 1000, false, 450000) || lukis(img, 700, false, 450000);
+      if (!kecil) return rej(new Error('Gambar terlalu besar. Cuba gambar lain.'));
+      res({ kecil, besar });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Tidak dapat membaca gambar.')); };
+    img.src = url;
+  });
+}
+
+async function tukarGambar(e) {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!f || !saya) return;
+  try {
+    toast('Memuat naik gambar…');
+    const g = await prosesGambar(f);
+    await run('apiSimpanGambar', saya.nama, saya.pin, g.kecil, g.besar);
+    GAMBAR[saya.nama] = g.kecil;
+    if (g.besar) BESAR[saya.nama] = g.besar; else delete BESAR[saya.nama];
+    $('sayaAv').innerHTML = av(saya.nama, 72);
+    paparRakan();
+    toast('Gambar disimpan.');
+  } catch (err) { toast(mesej(err)); }
+}
+
+/* ================= ANGGOTA ================= */
+let saya = null; // {nama, pin}
+let semuaNama = [];
+const rakan = new Set();
+
+function paparRakan() {
+  const q = $('cariRakan').value.trim().toUpperCase();
+  const calon = semuaNama.filter(n => saya && n !== saya.nama && (!q || n.includes(q)));
+  $('senaraiRakan').innerHTML = calon.length ? calon.map(n =>
+    '<label><input type="checkbox" data-n="' + esc(n) + '"' + (rakan.has(n) ? ' checked' : '') + '>' + av(n, 32) + '<span>' + esc(n) + '</span></label>'
+  ).join('') : '<div class="kecil" style="padding:10px 12px">Tiada nama sepadan.</div>';
+  $('rakanDipilih').innerHTML = [...rakan].map(n =>
+    '<span class="x" data-n="' + esc(n) + '">' + av(n, 24).replace('class="av', 'data-n="' + esc(n) + '" class="av') + esc(n) + ' ✕</span>').join('');
+}
+function togolRakan(n, on) { if (on) rakan.add(n); else rakan.delete(n); paparRakan(); }
+
+async function mulaAnggota() {
+  show($('vAnggota'), true);
+  try {
+    const [nama] = await Promise.all([run('apiAnggota'), muatGambar()]);
+    semuaNama = nama;
+    $('nama').innerHTML = '<option value="">— Pilih nama —</option>' +
+      nama.map(n => '<option>' + esc(n) + '</option>').join('');
+  } catch (e) { ralat($('eLogin'), e); return; }
+
+  const n = baca('km_nama'), p = baca('km_pin');
+  if (n && p) { $('nama').value = n; $('pin').value = p; login(true); }
+}
+
+async function login(auto) {
+  const nama = $('nama').value, pin = $('pin').value.trim();
+  show($('eLogin'), false);
+  if (!nama || !pin) { ralat($('eLogin'), 'Sila pilih nama dan masukkan PIN.'); return; }
+  $('bLogin').disabled = true; $('bLogin').textContent = 'Menyemak…';
+  try {
+    const st = await run('apiStatus', nama, pin);
+    saya = { nama, pin };
+    if ($('ingat').checked) { simpan('km_nama', nama); simpan('km_pin', pin); }
+    paparSaya(st);
+  } catch (e) {
+    if (auto) { simpan('km_pin', null); $('pin').value = ''; }
+    ralat($('eLogin'), e);
+  } finally {
+    $('bLogin').disabled = false; $('bLogin').textContent = 'Teruskan';
+  }
+}
+
+function paparSaya(st) {
+  show($('kLogin'), false); show($('kSaya'), true);
+  $('sayaNama').textContent = st.nama;
+  $('sayaAv').innerHTML = av(st.nama, 72);
+  const L = $('sayaLencana');
+  if (st.diLuar) {
+    const r = st.rekod;
+    L.className = 'lencana ' + (r.lewat ? 'l-lewat' : 'l-luar');
+    L.textContent = r.lewat ? 'LUPA MASUK' : 'DI LUAR';
+    $('luarButiran').innerHTML = [
+      ['Keluar', r.keluarPenuh], ['Tujuan', r.tujuan], ['Lokasi', r.lokasi],
+      ['Bersama', r.bersama], ['Tempoh di luar', tempohStr(r.minitLuar)]
+    ].filter(x => x[1]).map(x => '<li><span>' + x[0] + '</span><span>' + esc(x[1]) + '</span></li>').join('');
+    // Lupa tekan MASUK sejak hari sebelumnya → wajib isi jam sebenar balik
+    lupaMasuk = !!r.lewat;
+    $('fJamSebenar').value = '';
+    if (lupaMasuk) {
+      $('amaranLupa').innerHTML = '⚠️ Anda <b>belum tekan MASUK</b> sejak keluar pada <b>' + esc(r.keluarPenuh) +
+        '</b>. Sila isi jam sebenar anda balik ke pejabat pada <b>' + esc(r.tarikh) + '</b>, kemudian tekan MASUK.';
+      $('lblJamSebenar').textContent = 'Jam sebenar balik pada ' + r.tarikh + ' *';
+    } else {
+      $('lblJamSebenar').textContent = 'Jam sebenar anda balik ke pejabat (hari ini)';
+    }
+    show($('amaranLupa'), lupaMasuk);
+    show($('kJamSebenar'), lupaMasuk);
+    show($('bIsiJam'), !lupaMasuk);
+    show($('kBorang'), false); show($('kLuar'), true);
+  } else {
+    L.className = 'lencana l-dalam'; L.textContent = 'DI PEJABAT';
+    ['fTujuan', 'fLokasi', 'cariRakan', 'fCatatan'].forEach(id => $(id).value = '');
+    rakan.clear(); paparRakan();
+    show($('kLuar'), false); show($('kBorang'), true);
+  }
+}
+
+async function keluar() {
+  show($('eBorang'), false);
+  const d = {
+    nama: saya.nama, pin: saya.pin,
+    tujuan: $('fTujuan').value, lokasi: $('fLokasi').value.trim(),
+    bersama: [...rakan].join(', '),
+    catatan: $('fCatatan').value.trim()
+  };
+  if (!d.tujuan || !d.lokasi) {
+    ralat($('eBorang'), 'Sila isi tujuan dan lokasi.'); return;
+  }
+  $('bKeluar').disabled = true; $('bKeluar').textContent = 'Menyimpan…';
+  try {
+    const bil = rakan.size;
+    const st = await run('apiKeluar', d);
+    paparSaya(st);
+    const langkau = st.dilangkau || [];
+    let m = 'Rekod keluar disimpan';
+    if (bil) m += ' untuk anda + ' + (bil - langkau.length) + ' rakan';
+    m += '. Tekan MASUK bila balik.';
+    if (langkau.length) m += ' (' + langkau.join(', ') + ' sudah berstatus di luar, tidak direkod semula.)';
+    toast(m);
+  } catch (e) { ralat($('eBorang'), e); }
+  finally { $('bKeluar').disabled = false; $('bKeluar').textContent = 'KELUAR SEKARANG'; }
+}
+
+let lupaMasuk = false;
+async function masuk() {
+  show($('eLuar'), false);
+  const isiJam = !$('kJamSebenar').classList.contains('hidden');
+  const jam = isiJam ? $('fJamSebenar').value : '';
+  if (isiJam && !jam) { ralat($('eLuar'), 'Sila isi jam sebenar anda balik.'); return; }
+  $('bMasuk').disabled = true; $('bMasuk').textContent = 'Menyimpan…';
+  try {
+    paparSaya(await run('apiMasuk', saya.nama, saya.pin, jam));
+    toast('Selamat kembali! Rekod masuk disimpan (termasuk rakan yang anda daftarkan).');
+  } catch (e) { ralat($('eLuar'), e); }
+  finally { $('bMasuk').disabled = false; $('bMasuk').textContent = 'MASUK PEJABAT'; }
+}
+
+function tukarAkaun() {
+  simpan('km_nama', null); simpan('km_pin', null); saya = null;
+  $('pin').value = ''; $('nama').value = '';
+  show($('kSaya'), false); show($('kLogin'), true);
+}
+
+/* ================= BOS ================= */
+let bosPass = '', dataBos = null, pemasa = null;
+
+function mulaBos() {
+  $('tajuk').textContent = 'Pemantauan Keluar Masuk Anggota';
+  show($('vBos'), true);
+  const d = new Date();
+  $('tarikh').value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const p = baca('km_bos');
+  if (p) { $('bosPass').value = p; bosLogin(true); }
+}
+
+function isoTarikh(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function anjakTarikh(n) {
+  const v = $('tarikh').value;
+  const d = v ? new Date(v + 'T12:00:00') : new Date();
+  d.setDate(d.getDate() + n);
+  $('tarikh').value = isoTarikh(d);
+  tukarTarikh();
+}
+async function tukarTarikh() {
+  if (!bosPass) return;
+  $('jadualHarian').innerHTML = '<tr><td colspan="6" class="kecil">Memuatkan rekod ' + esc(tarikhPilih()) + '…</td></tr>';
+  $('labelTarikh').textContent = '';
+  try { await muatBos(); } catch (e) { toast(mesej(e)); }
+}
+
+function tarikhPilih() {
+  const v = $('tarikh').value; if (!v) return '';
+  const [y, m, d] = v.split('-'); return d + '/' + m + '/' + y;
+}
+
+async function bosLogin(auto) {
+  show($('eBos'), false);
+  bosPass = $('bosPass').value.trim();
+  if (!bosPass) return;
+  $('bBosLogin').disabled = true;
+  try {
+    await Promise.all([muatBos(), muatGambar()]);
+    paparBos();
+    simpan('km_bos', bosPass);
+    show($('kBosLogin'), false); show($('kBos'), true);
+    clearInterval(pemasa); pemasa = setInterval(muatBos, 60000);
+  } catch (e) {
+    if (auto) simpan('km_bos', null);
+    ralat($('eBos'), e);
+  } finally { $('bBosLogin').disabled = false; }
+}
+
+async function muatBos() {
+  $('bMuat').disabled = true;
+  try {
+    dataBos = await run('apiBos', bosPass, tarikhPilih());
+    paparBos();
+  } finally { $('bMuat').disabled = false; }
+}
+
+function paparBos() {
+  const d = dataBos; if (!d) return;
+  const q = $('cari').value.trim().toUpperCase();
+  const padan = n => !q || n.toUpperCase().includes(q);
+  const luar = d.status.filter(s => s.diLuar);
+  const dalam = d.status.filter(s => !s.diLuar);
+  $('nDalam').textContent = dalam.length;
+  $('nLuar').textContent = luar.length;
+  $('nLewat').textContent = luar.filter(s => s.rekod.lewat).length;
+  $('kemaskini').textContent = 'Dikemas kini ' + d.kemaskini + ' · auto setiap 1 minit';
+
+  const L = luar.filter(s => padan(s.nama))
+    .sort((a, b) => (b.rekod.lewat - a.rekod.lewat) || a.rekod.keluarPenuh.localeCompare(b.rekod.keluarPenuh));
+  $('senaraiLuar').innerHTML = L.length ? L.map(s => {
+    const r = s.rekod;
+    return '<div class="orang' + (r.lewat ? ' lewat' : '') + '"><div class="atas"><div class="kiri">' + av(s.nama, 48, true) +
+      '<span class="nm">' + esc(s.nama) + '</span></div>' +
+      '<span class="lencana ' + (r.lewat ? 'l-lewat">LUPA MASUK' : 'l-luar">DI LUAR') + '</span></div>' +
+      '<div class="info"><b>' + esc(r.tujuan) + '</b> · ' + esc(r.lokasi) + '<br>' +
+      'Keluar <b>' + esc(r.tarikh === d.tarikhHariIni ? r.keluar : r.keluarPenuh) + '</b> · Sudah <b>' + tempohStr(r.minitLuar) + '</b> di luar' +
+      (r.bersama ? '<br>Bersama: ' + esc(r.bersama) : '') +
+      (r.catatan ? '<br>Catatan: ' + esc(r.catatan) : '') + '</div></div>';
+  }).join('') : '<div class="kad kecil">Tiada anggota di luar pejabat.</div>';
+
+  const D = dalam.filter(s => padan(s.nama));
+  $('senaraiDalam').innerHTML = D.length ? D.map(s => '<div>' + av(s.nama, 48, true) + esc(s.nama) + '</div>').join('') : '<span class="kecil">—</span>';
+
+  // Abaikan jawapan lama jika pengguna sudah tukar tarikh
+  if (d.tarikh !== tarikhPilih()) return;
+  $('labelTarikh').textContent = 'Rekod pada ' + d.tarikh + (d.tarikh === d.tarikhHariIni ? ' (hari ini)' : '') +
+    ' · ' + d.harian.length + ' rekod';
+  const H = d.harian.filter(r => padan(r.nama));
+  $('jadualHarian').innerHTML = H.length ? H.map(r =>
+    '<tr><td><div class="nmc">' + av(r.nama, 24, true) + '<span>' + esc(r.nama) + '</span></div></td><td>' + esc(r.keluar) + '</td>' +
+    (r.masuk ? '<td>' + esc(r.masuk) + '</td>' : '<td class="m">' + (r.lewat ? 'Belum (lupa MASUK)' : 'Belum') + '</td>') +
+    '<td>' + tempohStr(r.tempoh) + '</td><td>' + esc(r.tujuan) + '</td><td>' + esc(r.lokasi) + '</td></tr>'
+  ).join('') : '<tr><td colspan="6" class="kecil">Tiada rekod pada ' + esc(d.tarikh) + '.</td></tr>';
+}
+
+/* ---------- Rumusan bulanan ---------- */
+const NAMA_BULAN = ['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'];
+const SENARAI_TUJUAN = ['Pemeriksaan Premis','Siasatan Kes','Siasatan Aduan','Operasi / Penguatkuasaan','Pensampelan',
+  'Mesyuarat / Kursus','Urusan Rasmi Luar Pejabat','Urusan Peribadi','Lain-lain'];
+let dataRumusan = null, ringkasan = null;
+
+function labelBulan(b) { const [y, m] = b.split('-'); return NAMA_BULAN[+m - 1] + ' ' + y; }
+function isiBulan() {
+  const d = new Date(), out = [];
+  for (let i = 0; i < 12; i++) {
+    const t = new Date(d.getFullYear(), d.getMonth() - i, 1);
+    const k = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0');
+    out.push('<option value="' + k + '">' + labelBulan(k) + (i === 0 ? ' (bulan ini)' : '') + '</option>');
+  }
+  $('pilihBulan').innerHTML = out.join('');
+}
+function jamMinit(m) {
+  if (!m) return '0j 0m';
+  return Math.floor(m / 60) + 'j ' + (m % 60) + 'm';
+}
+function kiraRumusan(d) {
+  const per = {};
+  d.anggota.forEach(n => per[n] = { nama: n, bil: 0, minit: 0, bilSiap: 0, belum: 0, tujuan: {} });
+  d.rekod.forEach(r => {
+    const p = per[r.nama] || (per[r.nama] = { nama: r.nama, bil: 0, minit: 0, bilSiap: 0, belum: 0, tujuan: {} });
+    p.bil++;
+    p.tujuan[r.tujuan] = (p.tujuan[r.tujuan] || 0) + 1;
+    if (r.belumMasuk) p.belum++;
+    else if (r.tempoh !== '' && !isNaN(r.tempoh)) { p.minit += Number(r.tempoh); p.bilSiap++; }
+  });
+  const baris = Object.values(per).map(p => {
+    const t = Object.entries(p.tujuan).sort((a, b) => b[1] - a[1])[0];
+    p.purata = p.bilSiap ? Math.round(p.minit / p.bilSiap) : 0;
+    p.utama = t ? t[0] + ' (' + t[1] + ')' : '—';
+    return p;
+  }).sort((a, b) => b.bil - a.bil || a.nama.localeCompare(b.nama));
+  return baris;
+}
+async function muatRumusan() {
+  const b = $('pilihBulan').value;
+  $('bRumusan').disabled = true; $('bRumusan').textContent = 'Memuatkan…';
+  try {
+    dataRumusan = await run('apiRumusan', bosPass, b);
+    ringkasan = kiraRumusan(dataRumusan);
+    const jumlah = ringkasan.reduce((s, p) => s + p.minit, 0);
+    const aktif = ringkasan.filter(p => p.bil).length;
+    $('statRumusan').innerHTML =
+      '<div class="s-luar"><b>' + dataRumusan.rekod.length + '</b><span>Jumlah keluar</span></div>' +
+      '<div class="s-dalam"><b>' + aktif + '/' + ringkasan.length + '</b><span>Anggota pernah keluar</span></div>' +
+      '<div><b style="font-size:20px">' + jamMinit(jumlah) + '</b><span>Jumlah masa di luar</span></div>';
+    $('jadualRumusan').innerHTML = ringkasan.map(p =>
+      '<tr><td><div class="nmc">' + av(p.nama, 24, true) + '<span>' + esc(p.nama) + '</span></div></td>' +
+      '<td>' + p.bil + '</td><td>' + (p.bil ? jamMinit(p.minit) : '—') + '</td>' +
+      '<td>' + (p.bilSiap ? jamMinit(p.purata) : '—') + '</td><td>' + esc(p.utama) + '</td>' +
+      '<td' + (p.belum ? ' class="m"' : '') + '>' + (p.belum || '—') + '</td></tr>').join('');
+    show($('kRumusan'), true);
+  } catch (e) { toast(mesej(e)); }
+  finally { $('bRumusan').disabled = false; $('bRumusan').textContent = 'Papar'; }
+}
+
+/* ---------- Penjana fail .xlsx ringkas (tanpa pustaka luar) ---------- */
+// Nota: jangan tulis '<' + '?' bersambung dalam fail ini — Apps Script anggap ia kod server
+const XMLH = '<' + '?xml version="1.0" encoding="UTF-8" standalone="yes"?' + '>';
+const XL = (() => {
+  const enc = new TextEncoder();
+  const CRC = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  function zip(files) {               // files: [{name, data(Uint8Array)}], kaedah STORE
+    const parts = [], cent = []; let off = 0;
+    files.forEach(f => {
+      const nm = enc.encode(f.name), d = f.data, c = crc32(d);
+      const h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true);
+      h.setUint16(12, 33, true); h.setUint32(14, c, true); h.setUint32(18, d.length, true); h.setUint32(22, d.length, true); h.setUint16(26, nm.length, true);
+      parts.push(new Uint8Array(h.buffer), nm, d);
+      const e = new DataView(new ArrayBuffer(46));
+      e.setUint32(0, 0x02014b50, true); e.setUint16(4, 20, true); e.setUint16(6, 20, true); e.setUint16(8, 0x0800, true);
+      e.setUint16(14, 33, true); e.setUint32(16, c, true); e.setUint32(20, d.length, true); e.setUint32(24, d.length, true); e.setUint16(28, nm.length, true);
+      e.setUint32(42, off, true);
+      cent.push(new Uint8Array(e.buffer), nm);
+      off += 30 + nm.length + d.length;
+    });
+    const cs = cent.reduce((s, x) => s + x.length, 0);
+    const z = new DataView(new ArrayBuffer(22));
+    z.setUint32(0, 0x06054b50, true); z.setUint16(8, files.length, true); z.setUint16(10, files.length, true);
+    z.setUint32(12, cs, true); z.setUint32(16, off, true);
+    return new Blob(parts.concat(cent, [new Uint8Array(z.buffer)]), { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+  const x = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+  const kol = i => { let s = ''; i++; while (i) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+  // sheet: {name, rows:[[...]], cols:[lebar], bold:[indeks baris], merges:['A1:I1']}
+  function sheetXml(sh) {
+    const bold = new Set(sh.bold || []);
+    const rows = sh.rows.map((r, ri) => '<row r="' + (ri + 1) + '">' + r.map((v, ci) => {
+      if (v === '' || v == null) return '';
+      const ref = kol(ci) + (ri + 1), st = bold.has(ri) ? ' s="1"' : '';
+      return typeof v === 'number' && isFinite(v) ? '<c r="' + ref + '"' + st + '><v>' + v + '</v></c>'
+        : '<c r="' + ref + '"' + st + ' t="inlineStr"><is><t xml:space="preserve">' + x(v) + '</t></is></c>';
+    }).join('') + '</row>').join('');
+    const cols = (sh.cols || []).map((w, i) => '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>').join('');
+    const mg = (sh.merges || []).length ? '<mergeCells count="' + sh.merges.length + '">' + sh.merges.map(m => '<mergeCell ref="' + m + '"/>').join('') + '</mergeCells>' : '';
+    return XMLH + '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+      (cols ? '<cols>' + cols + '</cols>' : '') + '<sheetData>' + rows + '</sheetData>' + mg + '</worksheet>';
+  }
+  function buat(sheets) {
+    const f = (name, s) => ({ name, data: enc.encode(s) });
+    const H = XMLH;
+    const files = [
+      f('[Content_Types].xml', H + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+        sheets.map((s, i) => '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('') + '</Types>'),
+      f('_rels/.rels', H + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'),
+      f('xl/workbook.xml', H + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' +
+        sheets.map((s, i) => '<sheet name="' + x(s.name) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>').join('') + '</sheets></workbook>'),
+      f('xl/_rels/workbook.xml.rels', H + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+        sheets.map((s, i) => '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>').join('') +
+        '<Relationship Id="rId' + (sheets.length + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'),
+      f('xl/styles.xml', H + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>')
+    ].concat(sheets.map((s, i) => f('xl/worksheets/sheet' + (i + 1) + '.xml', sheetXml(s))));
+    return zip(files);
+  }
+  function simpan(blob, nama) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = nama;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  }
+  return { buat, simpan };
+})();
+
+async function muatTurunExcel() {
+  if (!dataRumusan) return;
+  $('bMuatTurun').disabled = true; $('bMuatTurun').textContent = 'Menyediakan fail…';
+  try {
+    const d = dataRumusan, tajuk = labelBulan(d.bulan);
+    // Helaian 1: Rumusan
+    const r1 = [
+      ['RUMUSAN KELUAR MASUK PEJABAT — UNIT INSPEKTORAT, PKD KULIM'],
+      ['Bulan: ' + tajuk, '', '', 'Dijana: ' + d.dijana],
+      [],
+      ['Bil', 'Nama', 'Bil. keluar', 'Jumlah masa di luar (jam)', 'Jumlah (minit)', 'Purata setiap kali (minit)', 'Belum tekan MASUK']
+        .concat(SENARAI_TUJUAN)
+    ];
+    ringkasan.forEach((p, i) => r1.push([i + 1, p.nama, p.bil, +(p.minit / 60).toFixed(2), p.minit, p.purata, p.belum]
+      .concat(SENARAI_TUJUAN.map(t => p.tujuan[t] || 0))));
+    const tot = (k) => ringkasan.reduce((s, p) => s + p[k], 0);
+    r1.push(['', 'JUMLAH', tot('bil'), +(tot('minit') / 60).toFixed(2), tot('minit'), '', tot('belum')]
+      .concat(SENARAI_TUJUAN.map(t => ringkasan.reduce((s, p) => s + (p.tujuan[t] || 0), 0))));
+    const sh1 = { name: 'Rumusan', rows: r1, bold: [0, 3, r1.length - 1], merges: ['A1:I1'],
+      cols: [5, 42, 11, 14, 12, 14, 12].concat(SENARAI_TUJUAN.map(() => 16)) };
+    // Helaian 2: Butiran
+    const r2 = [['Bil', 'Tarikh', 'Hari', 'Nama', 'Masa keluar', 'Masa masuk', 'Tempoh (minit)', 'Tujuan', 'Lokasi / Premis', 'Bersama', 'Catatan']];
+    d.rekod.slice().sort((a, b) => {
+      const ka = a.tarikh.split('/').reverse().join('') + a.keluar, kb = b.tarikh.split('/').reverse().join('') + b.keluar;
+      return ka.localeCompare(kb) || a.nama.localeCompare(b.nama);
+    }).forEach((r, i) => r2.push([i + 1, r.tarikh, r.hari, r.nama, r.keluar, r.masuk || 'BELUM MASUK',
+      r.tempoh === '' ? '' : Number(r.tempoh), r.tujuan, r.lokasi, r.bersama, r.catatan]));
+    const sh2 = { name: 'Butiran', rows: r2, bold: [0], cols: [5, 11, 9, 40, 11, 13, 13, 24, 30, 40, 30] };
+    XL.simpan(XL.buat([sh1, sh2]), 'Rumusan Keluar Masuk Inspektorat - ' + tajuk + '.xlsx');
+    toast('Fail Excel dimuat turun.');
+  } catch (e) { toast(mesej(e)); }
+  finally { $('bMuatTurun').disabled = false; $('bMuatTurun').textContent = '⬇ Muat turun Excel'; }
+}
+
+let sasaranGambar = null;
+function paparUrus() {
+  if (!dataBos) return;
+  $('gridUrus').innerHTML = dataBos.status.map(s =>
+    '<div class="urus" data-n="' + esc(s.nama) + '" style="cursor:pointer">' + av(s.nama, 72) + esc(s.nama) +
+    '<div class="kecil" style="color:var(--hijau);font-weight:600;margin-top:3px">' + (GAMBAR[s.nama] ? 'Tukar' : '+ Tambah') + '</div></div>'
+  ).join('');
+}
+async function uploadGambarBos(e) {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  const n = sasaranGambar;
+  if (!f || !n) return;
+  try {
+    toast('Memuat naik gambar ' + n + '…');
+    const g = await prosesGambar(f);
+    await run('apiSimpanGambarBos', bosPass, n, g.kecil, g.besar);
+    GAMBAR[n] = g.kecil;
+    if (g.besar) BESAR[n] = g.besar; else delete BESAR[n];
+    paparBos(); paparUrus();
+    toast('Gambar ' + n + ' disimpan.');
+  } catch (err) { toast(mesej(err)); }
+}
+
+function bosKeluar() {
+  simpan('km_bos', null); clearInterval(pemasa); bosPass = '';
+  $('bosPass').value = ''; show($('kBos'), false); show($('kBosLogin'), true);
+}
+
+/* ================= MULA ================= */
+$('bLogin').onclick = () => login(false);
+$('pin').onkeydown = e => { if (e.key === 'Enter') login(false); };
+$('bKeluar').onclick = keluar;
+$('cariRakan').oninput = paparRakan;
+$('senaraiRakan').onchange = e => { if (e.target.dataset.n) togolRakan(e.target.dataset.n, e.target.checked); };
+$('rakanDipilih').onclick = e => { if (e.target.dataset.n) togolRakan(e.target.dataset.n, false); };
+$('bMasuk').onclick = masuk;
+$('bIsiJam').onclick = () => { show($('kJamSebenar'), true); show($('bIsiJam'), false); $('fJamSebenar').focus(); };
+$('bKeluarAkaun').onclick = tukarAkaun;
+$('bBosLogin').onclick = () => bosLogin(false);
+$('bosPass').onkeydown = e => { if (e.key === 'Enter') bosLogin(false); };
+$('bMuat').onclick = () => Promise.all([muatBos(), muatGambar()]).then(paparBos).catch(e => toast(mesej(e)));
+// Gambar sendiri: tekan gambar → lihat penuh; tekan ikon 📷 → tukar
+$('bGambar').onclick = e => {
+  if (e.target.closest('.kamera') || !saya || !GAMBAR[saya.nama]) $('failGambar').click();
+  else bukaGambar(saya.nama);
+};
+// Mana-mana gambar bertanda data-lihat → paparan penuh
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-lihat]');
+  if (el) { e.preventDefault(); bukaGambar(el.dataset.lihat); }
+});
+$('lightbox').onclick = e => { if (e.target.id !== 'lbImg') tutupGambar(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') tutupGambar(); });
+$('bTukarGambar').onclick = () => $('failGambar').click();
+$('failGambar').onchange = tukarGambar;
+$('bUrusGambar').onclick = () => {
+  const buka = $('kUrusGambar').classList.contains('hidden');
+  show($('kUrusGambar'), buka);
+  $('bUrusGambar').textContent = buka ? '✕ Tutup senarai' : '📷 Tunjuk senarai untuk upload gambar';
+  if (buka) paparUrus();
+};
+$('gridUrus').onclick = e => {
+  const el = e.target.closest('.urus');
+  if (!el) return;
+  sasaranGambar = el.dataset.n;
+  $('failGambarBos').click();
+};
+$('failGambarBos').onchange = uploadGambarBos;
+isiBulan();
+$('bRumusan').onclick = muatRumusan;
+$('pilihBulan').onchange = () => { if (!$('kRumusan').classList.contains('hidden')) muatRumusan(); };
+$('bMuatTurun').onclick = muatTurunExcel;
+$('bTarikh').onclick = () => { $('tarikh').value = isoTarikh(new Date()); tukarTarikh(); };
+$('tarikh').onchange = tukarTarikh;
+$('bSebelum').onclick = () => anjakTarikh(-1);
+$('bSelepas').onclick = () => anjakTarikh(1);
+$('cari').oninput = paparBos;
+$('bBosKeluar').onclick = bosKeluar;
+
+if (MODE === 'bos') mulaBos(); else mulaAnggota();
+</script>
+
+<div id="barPasang" class="barPasang hidden">
+  <span id="teksPasang">Pasang app ini di telefon anda</span>
+  <button id="bPasang">Pasang</button>
+  <button id="bTutupPasang" aria-label="Tutup">✕</button>
+</div>
+<script>
+(function () {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
+  var bar = document.getElementById('barPasang'), teks = document.getElementById('teksPasang'),
+      bP = document.getElementById('bPasang'), KUNCI = 'km_tutup_pasang_' + MODE, tunda = null;
+  var standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  function pernahTutup() { try { return localStorage.getItem(KUNCI) === '1'; } catch (e) { return false; } }
+  if (standalone || pernahTutup()) return;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault(); tunda = e; bar.classList.remove('hidden');
+  });
+  bP.onclick = function () {
+    if (!tunda) return;
+    tunda.prompt(); tunda.userChoice.finally(function () { tunda = null; bar.classList.add('hidden'); });
+  };
+  var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (ios) {
+    teks.innerHTML = 'Pasang app: tekan <b>Share</b> <span style="font-size:15px">⎋</span> kemudian <b>Add to Home Screen</b>';
+    bP.style.display = 'none'; bar.classList.remove('hidden');
+  }
+  document.getElementById('bTutupPasang').onclick = function () {
+    bar.classList.add('hidden'); try { localStorage.setItem(KUNCI, '1'); } catch (e) {}
+  };
+})();
+</script>
+</body>
+</html>
